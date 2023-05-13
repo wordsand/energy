@@ -131,6 +131,37 @@ $(document).ready(function()
       });
     });
 
+
+
+
+
+    // 保存附件的: 变更 / 调拨
+    $('#saveSubDeviceChanges').on('click', function() {
+      const formData = $('#update-sub-device-form').serialize();
+      $.ajax({
+        url: 'action.php',
+        type: 'POST',
+        data: formData,
+        success: function(response) {
+          if (response === 'success') {
+
+            $('#changeSubDeviceModal').modal('hide');
+            loadSubDevices();
+
+          } else {
+            alert('附件变更失败1，请稍后重试。\n' + response);
+          }
+        },
+        error: function() {
+          alert('附件变更失败2，请稍后重试。');
+        }
+      });
+
+    });
+
+
+
+
     // 点击地点统计链接时加载地点统计
     $('a[href="#location_statistics"]').on('click', function(e) {
       e.preventDefault();
@@ -141,6 +172,24 @@ $(document).ready(function()
     $('a[href="#status_statistics"]').on('click', function(e) {
       e.preventDefault();
       loadStatusStatistics();
+    });
+
+
+    $('a[href="#log"]').on('click', function(e) {
+      e.preventDefault();
+
+      $.ajax({
+        url: 'action.php',
+        type: 'GET',
+        data: { action: 'log' },
+        success: function(response) {
+          $('.content-wrapper').html(response);          
+        },
+        error: function() {
+          alert('失败');
+        }
+      });
+      
     });
 
 
@@ -168,9 +217,26 @@ $(document).ready(function()
           alert('加载变更附件表单失败，请稍后重试。');
         }
       });
-
-
     });
+
+
+    $(document).on('click', '.del-subdevice', function() {
+      var subDeviceId = $(this).data('id');
+      $.ajax({
+        url: 'action.php',
+        type: 'GET',
+        data: { action: 'del_sub_device', sub_id: subDeviceId },
+        success: function(response) {
+console.log(response);
+          alert(response);
+        },
+        error: function() {
+          alert('失败');
+        }
+      });
+    });
+
+
 
 
 
@@ -352,7 +418,7 @@ function loadStatusStatistics() {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-        <button type="button" class="btn btn-primary">保存变更</button>
+        <button type="button" class="btn btn-primary" id="saveSubDeviceChanges">保存变更</button>
       </div>
     </div>
   </div>
@@ -399,16 +465,10 @@ function loadStatusStatistics() {
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-exchange-alt"></i>调拨</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-file-alt"></i>台账管理</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="#"><i class="fas fa-bell"></i>到期通知</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-history"></i>日志记录</a>
+                    <a class="nav-link" href="#log"><i class="fas fa-history"></i>日志记录</a>
                 </li>
             </ul>
         </nav>
