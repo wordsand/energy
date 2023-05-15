@@ -384,9 +384,51 @@ function echoLog($conn)
     }
     echo "</tbody>";
     echo "</table>";
+}
 
+
+
+function  expired($conn)
+{
+    $sql = "SELECT *,Main.编号 as 主设备编号 , IF(有效期 < NOW(), '是', '否') as 是否超期  FROM Main  INNER JOIN Sub ON Main.ID = Sub.mainID 
+            where 有效期<DATE_ADD(NOW(), INTERVAL 30 DAY)";
+ 
+    $result = mysqli_query($conn, $sql);
+
+    echo "<table class='table'>";
+    echo "<tbody>";
+
+
+    echo "<tr><th>主设备编号</th><th>主设备位置</th><th>设备名称</th><th>设备编号</th><th>类别</th><th>规格型号</th><th>数量</th><th>计量单位</th><th>有效期</th><th>价格</th></tr>";
+
+
+    while ($row = mysqli_fetch_assoc($result)) 
+    {
+
+        if( $row['是否超期'] == "是" )
+            echo "<tr style='color:red'>";
+        else 
+            echo "<tr>";
+        
+
+        echo "<td>" . $row['主设备编号'] . "</td>";
+        echo "<td>" . $row['位置'] . "</td>";
+        echo "<td>" . $row['名称'] . "</td>";
+        echo "<td>" . $row['编号'] . "</td>";
+        echo "<td>" . $row['类别'] . "</td>";
+        echo "<td>" . $row['规格型号'] . "</td>";
+        echo "<td>" . $row['数量'] . "</td>";
+        echo "<td>" . $row['计量单位'] . "</td>";
+        echo "<td>" . $row['有效期'] . "</td>";
+        echo "<td>" . $row['价格'] . "</td>";
+        echo "</tr>";
+
+    }
+    echo "</tbody>";
+    echo "</table>";
 
 }
+
 
 // ===============================================================================================================
 
@@ -435,15 +477,15 @@ switch ($action) {
     case 'del_sub_device':
         delDevices($conn);
         break;
+    case 'expired':
+        expired($conn);
+        break;
     case 'log':
         echoLog($conn);
         break;
-
-    //...其他操作
-
-
-    break;
-
+    default:
+        echo "不支持的命令: " . $action;
+        break;
 
 }
 

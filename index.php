@@ -7,6 +7,9 @@
     <script src="res/jquery.min.js"></script>
     <link rel="stylesheet" href="res/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="res/fontawesome/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         body {
             font-family: "微软雅黑", sans-serif;
@@ -44,12 +47,32 @@
         }
         .content-wrapper {
             padding: 20px;
+            background-color: #FFDDCC;
         }
-    </style>
+
+
+      .submenu-item {
+          font-size: 0.9rem; /* 设置字体大小 */
+          margin-left: 20px; /* 设置左边距 */
+      }
+
+    .arrow {
+        margin-left: 10px;
+    }
+
+  #pieChart {
+    max-width: 500px;
+    max-height: 500px;
+    margin-left: 100px;
+  }
+
+</style>
 
 
 
 <script>
+
+
 $(document).ready(function() 
 {
     // 点击主设备链接时加载主设备列表
@@ -165,7 +188,7 @@ $(document).ready(function()
     // 点击地点统计链接时加载地点统计
     $('a[href="#location_statistics"]').on('click', function(e) {
       e.preventDefault();
-      loadLocationStatistics();
+      showPie();
     });
 
     // 点击状态统计链接时加载状态统计
@@ -173,6 +196,29 @@ $(document).ready(function()
       e.preventDefault();
       loadStatusStatistics();
     });
+
+
+
+
+
+    $('a[href="#expired"]').on('click', function(e) {
+      e.preventDefault();
+
+      $.ajax({
+        url: 'action.php',
+        type: 'GET',
+        data: { action: 'expired' },
+        success: function(response) {
+          $('.content-wrapper').html(response);          
+        },
+        error: function() {
+          alert('失败');
+        }
+      });
+      
+    });
+
+
 
 
     $('a[href="#log"]').on('click', function(e) {
@@ -227,7 +273,6 @@ $(document).ready(function()
         type: 'GET',
         data: { action: 'del_sub_device', sub_id: subDeviceId },
         success: function(response) {
-console.log(response);
           alert(response);
         },
         error: function() {
@@ -259,9 +304,7 @@ console.log(response);
         });
     });
 
-
 });
-
 
 
 function openChangeSubDeviceForm(subDeviceId) {
@@ -279,8 +322,6 @@ function openChangeSubDeviceForm(subDeviceId) {
     }
   });
 }
-
-
 
 
 function loadAddMainDeviceForm() {
@@ -374,6 +415,72 @@ function loadStatusStatistics() {
   });
 }
 
+function toggleArrow(element) {
+    const arrowIcon = element.querySelector('.arrow');
+    arrowIcon.classList.toggle('fa-chevron-down');
+    arrowIcon.classList.toggle('fa-chevron-up');
+}
+
+
+function showPie()
+{
+  
+  const canvas = $('<canvas>').attr('id', 'pieChart').attr('width','500');
+
+  $('.content-wrapper').html(canvas);
+
+  const data = [
+  { label: '区域A', count: 15 },
+  { label: '区域B', count: 25 },
+  { label: '区域C', count: 10 }
+  ];
+
+
+
+  // 获取<canvas>元素
+  const ctx = document.getElementById('pieChart').getContext('2d');
+
+  // 提取标签和值
+  const labels = data.map(item => item.label);
+  const values = data.map(item => item.count);
+
+  // 创建饼图实例
+  const pieChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.5)',
+          'rgba(54, 162, 235, 0.5)',
+          'rgba(255, 206, 86, 0.5)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)'
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: '设备区域数量统计'
+        },
+        legend: {
+          display: true,
+          position: 'right'
+        }
+      }
+    }
+  });
+};
+
+
 
 
 </script>
@@ -451,21 +558,31 @@ function loadStatusStatistics() {
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#" data-toggle="collapse" data-target="#statisticsSubmenu" aria-expanded="false" aria-controls="statisticsSubmenu">
+
+<!--                     <a class="nav-link" href="#" data-toggle="collapse" data-target="#statisticsSubmenu" aria-expanded="false" aria-controls="statisticsSubmenu">
                         <i class="fas fa-chart-pie"></i>统计
                     </a>
+ -->
+
+
+
+                    <a class="nav-link" href="#" data-toggle="collapse" data-target="#statisticsSubmenu" aria-expanded="false" aria-controls="statisticsSubmenu" onclick="toggleArrow(this)">
+                      <i class="fas fa-chart-pie"></i>统计 <i class="fas fa-chevron-down arrow"></i>
+                    </a>
+
+
                     <ul class="collapse list-unstyled" id="statisticsSubmenu">
-                        <li class="nav-item">
-                            <a class="nav-link pl-4" href="#location_statistics">地点统计</a>
+                        <li class="nav-item submenu-item">
+                            <a class="nav-link pl-4" href="#location_statistics"><i class="fas fa-chart-pie"></i>地点统计</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link pl-4" href="#status_statistics">状态统计</a>
+                        <li class="nav-item submenu-item">
+                            <a class="nav-link pl-4" href="#status_statistics"><i class="fas fa-chart-pie"></i>状态统计</a>
                         </li>
                     </ul>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-bell"></i>到期通知</a>
+                    <a class="nav-link" href="#expired"><i class="fas fa-bell"></i>到期通知</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#log"><i class="fas fa-history"></i>日志记录</a>
@@ -473,7 +590,7 @@ function loadStatusStatistics() {
             </ul>
         </nav>
         <main class="col-md-10 content-wrapper">
-            <!-- Tab标签内容区域 -->
+          <img src="res/bg4.png" width="100%">
         </main>
     </div>
 </div>
